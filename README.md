@@ -1,10 +1,22 @@
 # AI Job Market Intelligence
 
-A data project for collecting, validating, and analyzing European job market data.
+A data project for collecting, validating, and analyzing job postings from the German job market.
 
-## Current version
+## Current development status
 
-**v0.1 — Raw data ingestion**
+**v0.1 — In progress**
+
+Completed so far:
+
+- raw job data ingestion from the Arbeitnow API;
+- API response validation;
+- data quality checks for essential fields;
+- raw JSON dataset preservation.
+
+The official v0.1 release is planned after data transformation,
+exploratory analysis, Power BI visualization, and final documentation.
+
+**Raw data ingestion**
 
 The current pipeline:
 
@@ -82,14 +94,13 @@ data/raw/jobs_raw.json
 
 ## Planned evolution
 
-Possible next versions include:
+Future iterations may explore:
 
-- normalized and cleaned datasets;
-- automated tests;
-- multi-page ingestion;
-- job title and skill analysis;
-- SQL storage;
-- Power BI dashboard;
+- LLM-based job enrichment and classification;
+- historical job market tracking;
+- automated and incremental data ingestion;
+- data quality and automated testing;
+- broader European market coverage using additional data sources;
 - AI-assisted market insights.
 
 ## Author
