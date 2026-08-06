@@ -6,7 +6,8 @@ from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
-from src.geography import make_final_geographic_decision
+from src.geography import classify_source_market
+from src.skills import detect_skills
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -132,6 +133,10 @@ def write_processed_csv(jobs):
                 job["job_types"],
                 ensure_ascii=False,
             )
+            csv_job["detected_skills"] = json.dumps(
+                job["detected_skills"],
+                ensure_ascii=False,
+            )
 
             writer.writerow(csv_job)
 
@@ -142,54 +147,79 @@ def main():
 
     raw_jobs = payload["data"]
 
-    geographic_decisions = [
-        make_final_geographic_decision(job)
+    market_classifications = [
+        classify_source_market(job)
         for job in raw_jobs
     ]
-    geographic_decision_counts = Counter(geographic_decisions)
 
-    if geographic_decision_counts["unresolved"]:
-        raise ValueError(
-            "Geographic processing cannot continue while "
-            f"{geographic_decision_counts['unresolved']} jobs are unresolved."
-        )
-
-    germany_raw_jobs = [
-        job
-        for job, decision in zip(
+    unresolved_markets = [
+        {
+            "job_id": job.get("slug"),
+            "url": job.get("url"),
+            "source_domain": classification["source_domain"],
+        }
+        for job, classification in zip(
             raw_jobs,
-            geographic_decisions,
+            market_classifications,
             strict=True,
         )
-        if decision == "include_germany"
+        if classification["market_status"] != "confirmed"
     ]
 
-    normalized_jobs = [
-        normalize_job(job)
-        for job in germany_raw_jobs
-    ]
+    if unresolved_markets:
+        raise ValueError(
+            "Market classification cannot continue while "
+            f"{len(unresolved_markets)} jobs are unresolved. "
+            f"Details: {unresolved_markets}"
+        )
+
+    normalized_jobs = []
+
+    for raw_job, classification in zip(
+        raw_jobs,
+        market_classifications,
+        strict=True,
+    ):
+        normalized_job = normalize_job(raw_job)
+
+        detected_skills = detect_skills(
+            normalized_job["title"],
+            normalized_job["description_clean"],
+            " ".join(normalized_job["tags"]),
+            " ".join(normalized_job["job_types"]),
+        )
+
+        normalized_job.update(
+            {
+                "source_domain": classification["source_domain"],
+                "source_market": classification["source_market"],
+                "source_market_code": classification[
+                    "source_market_code"
+                ],
+                "detected_skills": detected_skills,
+            }
+        )
+
+        normalized_jobs.append(normalized_job)
+
+    market_counts = Counter(
+        job["source_market_code"]
+        for job in normalized_jobs
+    )
+
+    print("Source market classification:")
+    print(f"- Raw jobs: {len(raw_jobs)}")
+    print(f"- Germany (DE): {market_counts['DE']}")
+    print(f"- United Kingdom (GB): {market_counts['GB']}")
+    print(f"- Unresolved: {len(unresolved_markets)}")
+    print(f"- Jobs selected for processing: {len(normalized_jobs)}")
+
+    if not normalized_jobs:
+        raise ValueError(
+            "No jobs were available after market classification."
+        )
 
     first_normalized_job = normalized_jobs[0]
-
-    print("Geographic processing:")
-    print(f"- Raw jobs: {len(raw_jobs)}")
-    print(
-        f"- Include Germany: "
-        f"{geographic_decision_counts['include_germany']}"
-    )
-    print(
-        f"- Exclude outside Germany: "
-        f"{geographic_decision_counts['exclude_outside_germany']}"
-    )
-    print(
-        f"- Exclude insufficient evidence: "
-        f"{geographic_decision_counts['exclude_insufficient_evidence']}"
-    )
-    print(
-        f"- Unresolved: "
-        f"{geographic_decision_counts['unresolved']}"
-    )
-    print(f"- Jobs selected for processing: {len(germany_raw_jobs)}")
 
     print("\nNormalized first job:")
 
