@@ -135,223 +135,227 @@ def write_processed_csv(jobs):
 
             writer.writerow(csv_job)
 
+def main():
+    with RAW_FILE.open("r", encoding="utf-8") as file:
+        payload = json.load(file)
 
-with RAW_FILE.open("r", encoding="utf-8") as file:
-    payload = json.load(file)
 
+    raw_jobs = payload["data"]
 
-raw_jobs = payload["data"]
-
-geographic_decisions = [
-    make_final_geographic_decision(job)
-    for job in raw_jobs
-]
-geographic_decision_counts = Counter(geographic_decisions)
-
-if geographic_decision_counts["unresolved"]:
-    raise ValueError(
-        "Geographic processing cannot continue while "
-        f"{geographic_decision_counts['unresolved']} jobs are unresolved."
-    )
-
-germany_raw_jobs = [
-    job
-    for job, decision in zip(
-        raw_jobs,
-        geographic_decisions,
-        strict=True,
-    )
-    if decision == "include_germany"
-]
-
-normalized_jobs = [
-    normalize_job(job)
-    for job in germany_raw_jobs
-]
-
-first_normalized_job = normalized_jobs[0]
-
-print("Geographic processing:")
-print(f"- Raw jobs: {len(raw_jobs)}")
-print(
-    f"- Include Germany: "
-    f"{geographic_decision_counts['include_germany']}"
-)
-print(
-    f"- Exclude outside Germany: "
-    f"{geographic_decision_counts['exclude_outside_germany']}"
-)
-print(
-    f"- Exclude insufficient evidence: "
-    f"{geographic_decision_counts['exclude_insufficient_evidence']}"
-)
-print(
-    f"- Unresolved: "
-    f"{geographic_decision_counts['unresolved']}"
-)
-print(f"- Jobs selected for processing: {len(germany_raw_jobs)}")
-
-print("\nNormalized first job:")
-
-for field, value in first_normalized_job.items():
-    preview = repr(value)
-
-    if len(preview) > 200:
-        preview = preview[:197] + "..."
-
-    print(f"- {field}: {preview}")
-
-required_fields = [
-    "job_id",
-    "company_name",
-    "title",
-    "description_clean",
-    "url",
-    "created_at_utc",
-]
-
-invalid_jobs = []
-
-for job in normalized_jobs:
-    missing_required = [
-        field
-        for field in required_fields
-        if job.get(field) is None
+    geographic_decisions = [
+        make_final_geographic_decision(job)
+        for job in raw_jobs
     ]
+    geographic_decision_counts = Counter(geographic_decisions)
 
-    if missing_required:
-        invalid_jobs.append(
-            {
-                "job_id": job.get("job_id"),
-                "missing_fields": missing_required,
-            }
+    if geographic_decision_counts["unresolved"]:
+        raise ValueError(
+            "Geographic processing cannot continue while "
+            f"{geographic_decision_counts['unresolved']} jobs are unresolved."
         )
 
-unique_job_ids = {
-    job["job_id"]
-    for job in normalized_jobs
-    if job["job_id"] is not None
-}
+    germany_raw_jobs = [
+        job
+        for job, decision in zip(
+            raw_jobs,
+            geographic_decisions,
+            strict=True,
+        )
+        if decision == "include_germany"
+    ]
 
+    normalized_jobs = [
+        normalize_job(job)
+        for job in germany_raw_jobs
+    ]
 
-print("\nProcessing validation:")
-print(f"- Raw jobs: {len(raw_jobs)}")
-print(f"- Normalized jobs: {len(normalized_jobs)}")
-print(f"- Jobs missing required fields: {len(invalid_jobs)}")
-print(f"- Unique job IDs: {len(unique_job_ids)}")
+    first_normalized_job = normalized_jobs[0]
 
-if invalid_jobs:
-    print(f"- Invalid job details: {invalid_jobs}")
-
-html_pattern = re.compile(r"<[^>]+>")
-
-descriptions_with_html = [
-    job["job_id"]
-    for job in normalized_jobs
-    if job["description_clean"]
-    and html_pattern.search(job["description_clean"])
-]
-
-empty_descriptions = [
-    job["job_id"]
-    for job in normalized_jobs
-    if job["description_clean"] is None
-]
-
-print("\nDescription validation:")
-print(
-    f"- Descriptions still containing HTML: "
-    f"{len(descriptions_with_html)}"
-)
-print(f"- Empty cleaned descriptions: {len(empty_descriptions)}")
-
-if descriptions_with_html:
+    print("Geographic processing:")
+    print(f"- Raw jobs: {len(raw_jobs)}")
     print(
-        f"- Job IDs with remaining HTML: "
-        f"{descriptions_with_html}"
+        f"- Include Germany: "
+        f"{geographic_decision_counts['include_germany']}"
     )
-
-if empty_descriptions:
     print(
-        f"- Job IDs with empty descriptions: "
-        f"{empty_descriptions}"
+        f"- Exclude outside Germany: "
+        f"{geographic_decision_counts['exclude_outside_germany']}"
     )
-
-print("\nRemaining HTML samples:")
-
-sample_count = 0
-
-for job in normalized_jobs:
-    description = job["description_clean"]
-
-    if not description:
-        continue
-
-    matches = list(html_pattern.finditer(description))
-
-    if not matches:
-        continue
-
-    print(f"\n- Job ID: {job['job_id']}")
-
-    for match in matches[:3]:
-        start = max(0, match.start() - 80)
-        end = min(len(description), match.end() + 80)
-
-        context = description[start:end]
-
-        print(f"  Match: {match.group()!r}")
-        print(f"  Context: {context!r}")
-
-    sample_count += 1
-
-    if sample_count == 10:
-        break
-
-validation_errors = []
-
-if invalid_jobs:
-    validation_errors.append(
-        f"{len(invalid_jobs)} jobs are missing required fields."
+    print(
+        f"- Exclude insufficient evidence: "
+        f"{geographic_decision_counts['exclude_insufficient_evidence']}"
     )
-
-if len(unique_job_ids) != len(normalized_jobs):
-    validation_errors.append(
-        "Normalized jobs contain duplicate or missing job IDs."
+    print(
+        f"- Unresolved: "
+        f"{geographic_decision_counts['unresolved']}"
     )
+    print(f"- Jobs selected for processing: {len(germany_raw_jobs)}")
 
-if descriptions_with_html:
-    validation_errors.append(
-        f"{len(descriptions_with_html)} descriptions still contain HTML."
+    print("\nNormalized first job:")
+
+    for field, value in first_normalized_job.items():
+        preview = repr(value)
+
+        if len(preview) > 200:
+            preview = preview[:197] + "..."
+
+        print(f"- {field}: {preview}")
+
+    required_fields = [
+        "job_id",
+        "company_name",
+        "title",
+        "description_clean",
+        "url",
+        "created_at_utc",
+    ]
+
+    invalid_jobs = []
+
+    for job in normalized_jobs:
+        missing_required = [
+            field
+            for field in required_fields
+            if job.get(field) is None
+        ]
+
+        if missing_required:
+            invalid_jobs.append(
+                {
+                    "job_id": job.get("job_id"),
+                    "missing_fields": missing_required,
+                }
+            )
+
+    unique_job_ids = {
+        job["job_id"]
+        for job in normalized_jobs
+        if job["job_id"] is not None
+    }
+
+
+    print("\nProcessing validation:")
+    print(f"- Raw jobs: {len(raw_jobs)}")
+    print(f"- Normalized jobs: {len(normalized_jobs)}")
+    print(f"- Jobs missing required fields: {len(invalid_jobs)}")
+    print(f"- Unique job IDs: {len(unique_job_ids)}")
+
+    if invalid_jobs:
+        print(f"- Invalid job details: {invalid_jobs}")
+
+    html_pattern = re.compile(r"<[^>]+>")
+
+    descriptions_with_html = [
+        job["job_id"]
+        for job in normalized_jobs
+        if job["description_clean"]
+        and html_pattern.search(job["description_clean"])
+    ]
+
+    empty_descriptions = [
+        job["job_id"]
+        for job in normalized_jobs
+        if job["description_clean"] is None
+    ]
+
+    print("\nDescription validation:")
+    print(
+        f"- Descriptions still containing HTML: "
+        f"{len(descriptions_with_html)}"
     )
+    print(f"- Empty cleaned descriptions: {len(empty_descriptions)}")
 
-if empty_descriptions:
-    validation_errors.append(
-        f"{len(empty_descriptions)} descriptions are empty."
-    )
+    if descriptions_with_html:
+        print(
+            f"- Job IDs with remaining HTML: "
+            f"{descriptions_with_html}"
+        )
 
-if validation_errors:
-    error_details = "\n".join(
-        f"- {error}"
-        for error in validation_errors
-    )
+    if empty_descriptions:
+        print(
+            f"- Job IDs with empty descriptions: "
+            f"{empty_descriptions}"
+        )
 
-    raise ValueError(
-        "Processed dataset validation failed:\n"
-        f"{error_details}"
-    )
+    print("\nRemaining HTML samples:")
 
-print("\nFinal validation: PASSED")
-print("- Dataset is ready to be written.")
+    sample_count = 0
 
-write_processed_json(normalized_jobs)
+    for job in normalized_jobs:
+        description = job["description_clean"]
 
-print("\nProcessed JSON written:")
-print(f"- File: {PROCESSED_JSON_FILE}")
-print(f"- Records: {len(normalized_jobs)}")
+        if not description:
+            continue
 
-write_processed_csv(normalized_jobs)
+        matches = list(html_pattern.finditer(description))
 
-print("\nProcessed CSV written:")
-print(f"- File: {PROCESSED_CSV_FILE}")
-print(f"- Records: {len(normalized_jobs)}")
+        if not matches:
+            continue
+
+        print(f"\n- Job ID: {job['job_id']}")
+
+        for match in matches[:3]:
+            start = max(0, match.start() - 80)
+            end = min(len(description), match.end() + 80)
+
+            context = description[start:end]
+
+            print(f"  Match: {match.group()!r}")
+            print(f"  Context: {context!r}")
+
+        sample_count += 1
+
+        if sample_count == 10:
+            break
+
+    validation_errors = []
+
+    if invalid_jobs:
+        validation_errors.append(
+            f"{len(invalid_jobs)} jobs are missing required fields."
+        )
+
+    if len(unique_job_ids) != len(normalized_jobs):
+        validation_errors.append(
+            "Normalized jobs contain duplicate or missing job IDs."
+        )
+
+    if descriptions_with_html:
+        validation_errors.append(
+            f"{len(descriptions_with_html)} descriptions still contain HTML."
+        )
+
+    if empty_descriptions:
+        validation_errors.append(
+            f"{len(empty_descriptions)} descriptions are empty."
+        )
+
+    if validation_errors:
+        error_details = "\n".join(
+            f"- {error}"
+            for error in validation_errors
+        )
+
+        raise ValueError(
+            "Processed dataset validation failed:\n"
+            f"{error_details}"
+        )
+
+    print("\nFinal validation: PASSED")
+    print("- Dataset is ready to be written.")
+
+    write_processed_json(normalized_jobs)
+
+    print("\nProcessed JSON written:")
+    print(f"- File: {PROCESSED_JSON_FILE}")
+    print(f"- Records: {len(normalized_jobs)}")
+
+    write_processed_csv(normalized_jobs)
+
+    print("\nProcessed CSV written:")
+    print(f"- File: {PROCESSED_CSV_FILE}")
+    print(f"- Records: {len(normalized_jobs)}")
+
+
+if __name__ == "__main__":
+    main()
