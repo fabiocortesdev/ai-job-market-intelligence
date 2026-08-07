@@ -50,6 +50,18 @@ def test_normalize_string_list_returns_empty_list_for_none():
     assert result == []
 
 
+def test_normalize_string_list_extracts_values_from_numeric_key_mapping():
+    value = {
+        "1": "professional / experienced",
+    }
+
+    result = normalize_string_list(value)
+
+    assert result == [
+        "professional / experienced",
+    ]
+
+
 def test_normalize_string_list_rejects_non_list_value():
     with pytest.raises(TypeError):
         normalize_string_list("Python")

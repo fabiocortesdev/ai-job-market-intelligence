@@ -1,28 +1,28 @@
 ﻿source_market_code,source_market,skill,jobs_mentioning_skill,total_jobs_in_market,skill_mention_rate,rank_in_market
-DE,Germany,artificial_intelligence,50,300,0.16666666666666666,1
-DE,Germany,python,36,300,0.12,2
-DE,Germany,sql,31,300,0.10333333333333333,3
-DE,Germany,excel,25,300,0.08333333333333333,4
-DE,Germany,aws,22,300,0.07333333333333333,5
-DE,Germany,git,21,300,0.07,6
-DE,Germany,azure,14,300,0.04666666666666667,7
-DE,Germany,kubernetes,12,300,0.04,8
-DE,Germany,docker,11,300,0.03666666666666667,9
-DE,Germany,gcp,9,300,0.03,10
-DE,Germany,power_bi,9,300,0.03,11
-DE,Germany,tableau,7,300,0.023333333333333334,12
-DE,Germany,machine_learning,6,300,0.02,13
-DE,Germany,spark,1,300,0.0033333333333333335,14
-GB,United Kingdom,python,17,75,0.22666666666666666,1
-GB,United Kingdom,kubernetes,12,75,0.16,2
-GB,United Kingdom,machine_learning,10,75,0.13333333333333333,3
-GB,United Kingdom,aws,7,75,0.09333333333333334,4
-GB,United Kingdom,excel,7,75,0.09333333333333334,5
-GB,United Kingdom,gcp,6,75,0.08,6
-GB,United Kingdom,sql,6,75,0.08,7
-GB,United Kingdom,artificial_intelligence,5,75,0.06666666666666667,8
-GB,United Kingdom,azure,5,75,0.06666666666666667,9
-GB,United Kingdom,spark,3,75,0.04,10
-GB,United Kingdom,docker,2,75,0.02666666666666667,11
-GB,United Kingdom,git,2,75,0.02666666666666667,12
-GB,United Kingdom,pandas,2,75,0.02666666666666667,13
+DE,Germany,artificial_intelligence,54,278,0.19424460431654678,1
+DE,Germany,python,21,278,0.07553956834532374,2
+DE,Germany,git,20,278,0.07194244604316546,3
+DE,Germany,aws,15,278,0.0539568345323741,4
+DE,Germany,azure,14,278,0.050359712230215826,5
+DE,Germany,kubernetes,14,278,0.050359712230215826,6
+DE,Germany,excel,13,278,0.046762589928057555,7
+DE,Germany,sql,12,278,0.04316546762589928,8
+DE,Germany,tableau,12,278,0.04316546762589928,9
+DE,Germany,docker,11,278,0.039568345323741004,10
+DE,Germany,power_bi,10,278,0.03597122302158273,11
+DE,Germany,gcp,9,278,0.03237410071942446,12
+DE,Germany,machine_learning,6,278,0.02158273381294964,13
+DE,Germany,spark,3,278,0.01079136690647482,14
+DE,Germany,pandas,1,278,0.0035971223021582736,15
+GB,United Kingdom,machine_learning,24,75,0.32,1
+GB,United Kingdom,python,21,75,0.28,2
+GB,United Kingdom,aws,12,75,0.16,3
+GB,United Kingdom,sql,12,75,0.16,4
+GB,United Kingdom,kubernetes,10,75,0.13333333333333333,5
+GB,United Kingdom,excel,9,75,0.12,6
+GB,United Kingdom,gcp,8,75,0.10666666666666667,7
+GB,United Kingdom,docker,7,75,0.09333333333333334,8
+GB,United Kingdom,artificial_intelligence,5,75,0.06666666666666667,9
+GB,United Kingdom,git,5,75,0.06666666666666667,10
+GB,United Kingdom,azure,4,75,0.05333333333333334,11
+GB,United Kingdom,spark,1,75,0.013333333333333334,12

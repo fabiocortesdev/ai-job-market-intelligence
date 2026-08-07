@@ -21,29 +21,40 @@ def normalize_text(value):
     if value is None:
         return None
 
-    normalized = re.sub(r"\s+", " ", str(value)).strip()
+    normalized_value = " ".join(str(value).split())
 
-    return normalized or None
+    return normalized_value or None
 
 
 def normalize_string_list(value):
     if value is None:
         return []
 
+    if isinstance(value, dict):
+        if not all(
+            isinstance(key, str) and key.isdigit()
+            for key in value
+        ):
+            raise TypeError(
+                "Expected a list or numeric-key mapping."
+            )
+
+        value = list(value.values())
+
     if not isinstance(value, list):
         raise TypeError(
             f"Expected a list, received {type(value).__name__}."
         )
 
-    normalized_items = []
+    normalized_values = []
 
     for item in value:
         normalized_item = normalize_text(item)
 
         if normalized_item is not None:
-            normalized_items.append(normalized_item)
+            normalized_values.append(normalized_item)
 
-    return normalized_items
+    return normalized_values
 
 
 def normalize_boolean(value):
